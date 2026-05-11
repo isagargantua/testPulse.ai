@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -16,6 +17,14 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+
+type SessionUser = {
+  email?: string;
+  user_metadata?: {
+    full_name?: string;
+    avatar_url?: string;
+  };
+};
 
 const navItems = [
   {
@@ -55,6 +64,33 @@ const bottomNavItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [user, setUser] = useState<SessionUser | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadUser() {
+      const response = await fetch('/api/auth/session');
+      if (!response.ok) return;
+      const result = await response.json();
+      if (!cancelled) setUser(result.user);
+    }
+
+    loadUser();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const displayName = user?.user_metadata?.full_name || user?.email || 'Account';
+  const displayEmail = user?.email || '';
+  const initials = displayName
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <aside className="flex flex-col w-64 border-r border-border bg-card h-screen sticky top-0">
@@ -128,12 +164,12 @@ export function Sidebar() {
       <div className="p-3 border-t border-border">
         <div className="flex items-center gap-3 px-3 py-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="" />
-            <AvatarFallback className="text-xs">JS</AvatarFallback>
+            <AvatarImage src={user?.user_metadata?.avatar_url || ''} />
+            <AvatarFallback className="text-xs">{initials || 'U'}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">John Smith</p>
-            <p className="text-xs text-muted-foreground truncate">john@example.com</p>
+            <p className="text-sm font-medium truncate">{displayName}</p>
+            <p className="text-xs text-muted-foreground truncate">{displayEmail}</p>
           </div>
         </div>
       </div>
