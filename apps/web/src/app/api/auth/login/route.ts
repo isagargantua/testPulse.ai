@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authService } from '@/lib/auth';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { loginSchema } from '@testpulse/validators';
 
 export async function POST(request: NextRequest) {
@@ -14,7 +14,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { user, session, error } = await authService.signIn(result.data);
+    const supabase = await createServerSupabaseClient();
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: result.data.email,
+      password: result.data.password,
+    });
 
     if (error) {
       return NextResponse.json(
@@ -24,10 +28,11 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      user,
-      session,
+      user: data.user,
+      session: data.session,
     });
   } catch (err) {
+    console.error('Login error:', err);
     return NextResponse.json(
       { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } },
       { status: 500 }

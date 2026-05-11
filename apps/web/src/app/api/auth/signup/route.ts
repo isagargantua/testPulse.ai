@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authService } from '@/lib/auth';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { signupSchema } from '@testpulse/validators';
 
 export async function POST(request: NextRequest) {
@@ -14,7 +14,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { user, session, error } = await authService.signUp(result.data);
+    const supabase = await createServerSupabaseClient();
+    const { data, error } = await supabase.auth.signUp({
+      email: result.data.email,
+      password: result.data.password,
+      options: {
+        data: {
+          full_name: result.data.full_name,
+        },
+      },
+    });
 
     if (error) {
       return NextResponse.json(
@@ -24,11 +33,12 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      user,
-      session,
+      user: data.user,
+      session: data.session,
       message: 'Account created successfully. Please check your email to confirm.',
     });
   } catch (err) {
+    console.error('Signup error:', err);
     return NextResponse.json(
       { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } },
       { status: 500 }
