@@ -1,0 +1,1 @@
+export { FailureService, failureService } from './failure.service';
