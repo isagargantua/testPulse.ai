@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -16,6 +16,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const {
     register,
@@ -28,6 +29,24 @@ export default function LoginPage() {
       password: '',
     },
   });
+
+  useEffect(() => {
+    // Check if user already has a valid session
+    async function checkSession() {
+      try {
+        const response = await fetch('/api/auth/session');
+        const result = await response.json();
+        if (result.user) {
+          router.push('/dashboard');
+        }
+      } catch (e) {
+        // No session, stay on login page
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    checkSession();
+  }, [router]);
 
   const onSubmit = async (data: LoginInput) => {
     try {
@@ -71,16 +90,22 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
+      {isLoading ? (
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Checking session...</p>
+        </div>
+      ) : (
+        <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
             <Bug className="w-6 h-6 text-primary-foreground" />
           </div>
-          <span className="text-2xl font-bold">TestPulse AI</span>
+          <span className="text-2xl font-bold tracking-tight">TestPulse</span>
         </div>
 
-        <Card className="border-border/50">
+        <Card className="border-border/50 bg-card shadow-xl">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Sign in</CardTitle>
             <CardDescription className="text-center">
@@ -202,6 +227,7 @@ export default function LoginPage() {
           </CardContent>
         </Card>
       </div>
+      )}
     </div>
   );
 }

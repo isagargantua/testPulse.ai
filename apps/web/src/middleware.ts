@@ -66,11 +66,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // If user is logged in and trying to access auth pages, redirect to dashboard
-  if (user && (pathname === '/login' || pathname === '/signup')) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
-  }
+  // NOTE: Allow access to auth pages even when logged in (for signing up new accounts)
 
   return supabaseResponse;
 }

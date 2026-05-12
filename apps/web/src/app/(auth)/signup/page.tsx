@@ -59,14 +59,14 @@ export default function SignupPage() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
             <Bug className="w-6 h-6 text-primary-foreground" />
           </div>
-          <span className="text-2xl font-bold">TestPulse AI</span>
+          <span className="text-2xl font-bold tracking-tight">TestPulse</span>
         </div>
 
-        <Card className="border-border/50">
+        <Card className="border-border/50 bg-card shadow-xl">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Create an account</CardTitle>
             <CardDescription className="text-center">
